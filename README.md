@@ -1,3 +1,3 @@
 # SecurityDroneTest
 
-Just a test project for a security class at OU
+Drone communication idea for OU Computer Security class
