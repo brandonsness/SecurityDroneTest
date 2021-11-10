@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\nessx\\source\\repos\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj": {}
+    "C:\\Users\\slyco\\Source\\Repos\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj": {}
   },
   "projects": {
-    "C:\\Users\\nessx\\source\\repos\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj": {
+    "C:\\Users\\slyco\\Source\\Repos\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\nessx\\source\\repos\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj",
+        "projectUniqueName": "C:\\Users\\slyco\\Source\\Repos\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj",
         "projectName": "SecurityDroneTest",
-        "projectPath": "C:\\Users\\nessx\\source\\repos\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj",
-        "packagesPath": "C:\\Users\\nessx\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\nessx\\source\\repos\\SecurityDroneTest\\SecurityDroneTest\\obj\\",
+        "projectPath": "C:\\Users\\slyco\\Source\\Repos\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj",
+        "packagesPath": "C:\\Users\\slyco\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\slyco\\Source\\Repos\\SecurityDroneTest\\SecurityDroneTest\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\nessx\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\slyco\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -26,6 +26,7 @@
         },
         "frameworks": {
           "netcoreapp3.1": {
+            "targetAlias": "netcoreapp3.1",
             "projectReferences": {}
           }
         },
@@ -37,6 +38,7 @@
       },
       "frameworks": {
         "netcoreapp3.1": {
+          "targetAlias": "netcoreapp3.1",
           "imports": [
             "net461",
             "net462",
@@ -52,7 +54,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.414\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.201\\RuntimeIdentifierGraph.json"
         }
       }
     }
