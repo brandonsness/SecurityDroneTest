@@ -1,35 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SecurityDroneTest
 {
-    class PRNG
+    public class PRNG
     {
+        public DateTime Seed { get; private set; }
 
-
-        /* Remove comment to allow for testing
-        static void Main(string[] args)
+        private Random RNGMachine { get; set; } 
+       
+        public PRNG()
         {
-            for(int i = 0; i < 10; i++)
-            {
-                Console.WriteLine(getNumber().Next());
-                Console.WriteLine(getNumber().Next());
-                Console.WriteLine(" ");
-            }
-            Console.ReadLine();
+            Seed = DateTime.Now;
+            RNGMachine = new Random(Seed.Second);
         }
-        */
-        private static DateTime localDate = DateTime.Now;
-        private static int sec = localDate.Second;
-        private static int numbCalls = 1;
 
-        public static Random getNumber()
+        public PRNG(DateTime seed)
         {
-            numbCalls++;
-            int Fin = numbCalls * sec;
-            Random numb = new Random(Fin);
-            return numb;
+            Seed = seed;
+            RNGMachine = new Random(Seed.Second);
+        }
+
+        public int getNext()
+        {
+            return RNGMachine.Next();
         }
     }
 }
