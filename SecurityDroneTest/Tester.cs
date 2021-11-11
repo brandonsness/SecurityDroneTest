@@ -7,7 +7,7 @@ namespace SecurityDroneTest
         public static void Main(string [] args)
         {
             Drone drone = new Drone();
-            DroneController control = new DroneController();
+            //DroneController control = new DroneController();
 
         }
     }

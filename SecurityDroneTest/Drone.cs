@@ -25,6 +25,8 @@ namespace SecurityDroneTest
             IPAddress ipAddress = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
             IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 0);
 
+            Console.WriteLine("DRONE: ip is: " + ipAddress + " and port is: " + localEndPoint.Port + "\n");
+
             try
             {
                 //Create socket
@@ -62,9 +64,8 @@ namespace SecurityDroneTest
             }
             catch(Exception e)
             {
-                Console.WriteLine("Oops Drone encountered error" + e + "\n");
+                Console.WriteLine("Oops Drone encountered error" + e.ToString() + "\n");
             }
-
         }
 
         private bool HandleCommand(int input)
