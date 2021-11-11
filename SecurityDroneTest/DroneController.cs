@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Net;
 
 namespace SecurityDroneTest
 {
@@ -21,26 +20,21 @@ namespace SecurityDroneTest
         {
             try
             {
-                IPAddress ipAddress = IPAddress.Parse(servIP);
-                IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
+                TcpClient control = new TcpClient(servIP, port);
 
-                //Create TCP socket
-                Socket sender = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                NetworkStream stream = control.GetStream();
 
-                //connect
-                sender.Connect(remoteEP);
-
-                Console.WriteLine("Socket connected to {0}", sender.RemoteEndPoint.ToString());
+                Console.WriteLine("Socket connected");
 
                 //get data from server
-                GetSetupData(sender);
+                GetSetupData(stream);
 
                 //Take user input
-                HandleInput(sender);
+                HandleInput(stream);
 
                 //Release socket
-                sender.Shutdown(SocketShutdown.Both);
-                sender.Close();
+                stream.Close();
+                control.Close();
             }
             catch(Exception e)
             {
@@ -48,18 +42,23 @@ namespace SecurityDroneTest
             }
         }
 
-        private void GetSetupData(Socket sock)
+        private void GetSetupData(NetworkStream stream)
         {
             byte[] bytes = new byte[1024];
             try
             {
                 //Get ClientKey
-                sock.Receive(bytes);
+                stream.Read(bytes);
                 ClientKey = BitConverter.ToInt32(bytes);
+                Console.WriteLine("Client key is {0}", ClientKey);
 
                 //Get Seed
-                sock.Receive(bytes);
+                stream.Read(bytes);
                 Seed = DateTime.FromBinary(BitConverter.ToInt64(bytes)); 
+                Console.WriteLine("Seed is {0}", Seed);
+
+                //Init Rng
+                Rng = new PRNG(Seed);
             }
             catch(Exception e)
             {
@@ -67,7 +66,7 @@ namespace SecurityDroneTest
             }
         }
 
-        private void HandleInput(Socket sock)
+        private void HandleInput(NetworkStream stream)
         {
             byte[] bytes = new byte[1024];
             while(true)
@@ -82,8 +81,7 @@ namespace SecurityDroneTest
                         int encryptedInput = EncryptorDecryptor.Encrypt(Rng.getNext(), input, ClientKey);
 
                         //Send encrypted data to Drone
-                        sock.Send(BitConverter.GetBytes(encryptedInput));
-
+                        stream.Write(BitConverter.GetBytes(encryptedInput));
                     }
                     catch(FormatException e)
                     {
