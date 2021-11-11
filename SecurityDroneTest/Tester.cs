@@ -9,7 +9,6 @@ namespace SecurityDroneTest
             Drone drone = new Drone();
             DroneController control = new DroneController();
 
-
         }
     }
 }
