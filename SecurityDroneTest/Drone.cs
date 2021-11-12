@@ -20,51 +20,51 @@ namespace SecurityDroneTest
 
         private void SetupConnection()
         {
-            //Get first ipv4 addr and set port as 0 for any available port
+            TcpListener drone = null;
+
+            //Get first ipv4 addr 
             IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ipAddress = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 0);
 
             try
             {
-                //Create socket
-                Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                drone = new TcpListener(ipAddress, 0);
+                drone.Start();
 
-                //bind to socket
-                sock.Bind(localEndPoint);
+                Console.WriteLine("DRONE: Connected on {0}:{1}\n", ((IPEndPoint)drone.LocalEndpoint).Address.ToString(), ((IPEndPoint)drone.LocalEndpoint).Port.ToString());
 
-                //only want one client
-                sock.Listen(1);
+                TcpClient control = drone.AcceptTcpClient();
+                Console.WriteLine("Connected to controller\n");
 
-                //Accept connection
-                Socket serv = sock.Accept();
+                //Stream for communicating
+                NetworkStream stream = control.GetStream();
 
                 //TODO: Perform async key exchange here
 
                 GenerateClientKey();
 
                 //Send clientKey and Seed to controller
-                serv.Send(BitConverter.GetBytes(ClientKey));
-                serv.Send(BitConverter.GetBytes(Rng.Seed.Ticks));
+                stream.Write(BitConverter.GetBytes(ClientKey));
+                stream.Write(BitConverter.GetBytes(Rng.Seed.Ticks));
 
                 byte[] bytes = null;
                 //listen for commands better way to do this
                 while(true)
                 {
                     bytes = new byte[1024];
+                    stream.Read(bytes);
                     int data = BitConverter.ToInt32(bytes);
                     HandleCommand(data);
                 }
 
-                serv.Shutdown(SocketShutdown.Both);
-                serv.Close();
-
+                stream.Close();
+                control.Close();
+                drone.Stop();
             }
             catch(Exception e)
             {
-                Console.WriteLine("Oops Drone encountered error" + e + "\n");
+                Console.WriteLine("Oops Drone encountered error" + e.ToString() + "\n");
             }
-
         }
 
         private bool HandleCommand(int input)
