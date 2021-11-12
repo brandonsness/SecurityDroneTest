@@ -8,19 +8,19 @@
     ".NETCoreApp,Version=v3.1": []
   },
   "packageFolders": {
-    "C:\\Users\\nessx\\.nuget\\packages\\": {}
+    "C:\\Users\\slyco\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\nessx\\source\\repos\\brandonsness\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj",
+      "projectUniqueName": "C:\\Users\\slyco\\Source\\Repos\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj",
       "projectName": "SecurityDroneTest",
-      "projectPath": "C:\\Users\\nessx\\source\\repos\\brandonsness\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj",
-      "packagesPath": "C:\\Users\\nessx\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\nessx\\source\\repos\\brandonsness\\SecurityDroneTest\\SecurityDroneTest\\obj\\",
+      "projectPath": "C:\\Users\\slyco\\Source\\Repos\\SecurityDroneTest\\SecurityDroneTest\\SecurityDroneTest.csproj",
+      "packagesPath": "C:\\Users\\slyco\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\slyco\\Source\\Repos\\SecurityDroneTest\\SecurityDroneTest\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\nessx\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\slyco\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -60,7 +60,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.403\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.201\\RuntimeIdentifierGraph.json"
       }
     }
   }
