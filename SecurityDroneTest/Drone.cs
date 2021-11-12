@@ -23,8 +23,8 @@ namespace SecurityDroneTest
             TcpListener drone = null;
 
             //Get first ipv4 addr 
-            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress ipAddress = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
+            string externalIpString = new System.Net.WebClient().DownloadString("https://api.ipify.org");
+            IPAddress ipAddress = IPAddress.Parse(externalIpString);
 
             try
             {
