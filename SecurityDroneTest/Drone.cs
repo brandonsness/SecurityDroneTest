@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -40,7 +41,6 @@ namespace SecurityDroneTest
                 //Stream for communicating
                 NetworkStream stream = control.GetStream();
 
-                //TODO: Perform async key exchange here
                 GenerateClientKey();
                 ShareClientKey(stream);
 
@@ -51,6 +51,11 @@ namespace SecurityDroneTest
                 stream.Read(bytes);
                 long fileSize = BitConverter.ToInt64(bytes);
                 Console.WriteLine("file size is {0}", fileSize);
+
+
+                //start timer
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
                 while(fileSize > 0)
                 {
                     bytes = new byte[32];
@@ -58,6 +63,9 @@ namespace SecurityDroneTest
                     fileSize -= 32;
                     HandleCommand(bytes);
                 }
+                //end timer
+                stopwatch.Stop();
+                Console.WriteLine("Seconds elapsed: {0} seconds", stopwatch.ElapsedTicks * Math.Pow(10, -7));
 
                 stream.Close();
                 control.Close();

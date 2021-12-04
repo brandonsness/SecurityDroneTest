@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -89,6 +90,10 @@ namespace SecurityDroneTest
                     stream.Write(BitConverter.GetBytes(fileSize));
                     using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
                     {
+                        //start timer
+                        var stopwatch = new Stopwatch();
+                        stopwatch.Start();
+                        //read and send data
                         while (fileSize > 0)
                         {
                             BinaryReader reader = new BinaryReader(fs);
@@ -101,6 +106,9 @@ namespace SecurityDroneTest
                             //Send encrypted data to Drone
                             stream.Write(encryptedInput);
                         }
+                        //end timer
+                        stopwatch.Stop();
+                        Console.WriteLine("Seconds elapsed: {0} seconds", stopwatch.ElapsedTicks * Math.Pow(10, -7));
                     }
                 }
                 catch (FormatException e)
