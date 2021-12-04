@@ -75,9 +75,13 @@ namespace SecurityDroneTest
             }
             else if(opts.Mode == ModeEnum.DroneAES)
             {
+                Console.WriteLine("Drone AES mode");
+                DroneAES Drone = new DroneAES();
             }
             else if(opts.Mode == ModeEnum.ControllerAES)
             {
+                Console.WriteLine("Controller AES mode");
+                ControllerAES controller = new ControllerAES(opts.IP, opts.Port, opts.FileName);
             }
             else
             {
