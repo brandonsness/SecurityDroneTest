@@ -51,7 +51,7 @@ namespace SecurityDroneTest
                 //listen for commands better way to do this
                 while(true)
                 {
-                    bytes = new byte[1024];
+                    bytes = new byte[32];
                     stream.Read(bytes);
                     HandleCommand(bytes);
                 }
@@ -69,14 +69,15 @@ namespace SecurityDroneTest
         private bool HandleCommand(byte [] input)
         {
             byte [] command = EncryptorDecryptor.Decrypt(Rng.getNext(), input, ClientKey);
-            Console.WriteLine("DRONE: Decrypted Command is: " + command + "\n");
+            double[] decrypt = GetDoubles(command);
+            Console.WriteLine("DRONE: Decrypted Command is: {0},{1},{2},{3}", decrypt[0], decrypt[1], decrypt[2], decrypt[3]);
             return true;
         }
 
         private void GenerateClientKey()
         {
             //Use new Cryptographic RNG for ClientKey 
-            byte[] bytes = new byte[320];
+            byte[] bytes = new byte[32];
             RandomNumberGenerator rng = RandomNumberGenerator.Create();
             rng.GetBytes(bytes);
             ClientKey = bytes;
@@ -94,5 +95,13 @@ namespace SecurityDroneTest
             enc.ImportRSAPublicKey(cPubKey, out tmp);
             stream.Write(enc.Encrypt(ClientKey, RSAEncryptionPadding.Pkcs1));
         }
+
+         private double[] GetDoubles(byte[] values)
+            {
+                var result = new double[4];
+                Buffer.BlockCopy(values, 0, result, 0, result.Length);
+                return result;
+            }
+
     }
 }

@@ -57,7 +57,7 @@ namespace SecurityDroneTest
                 //get encrypted Client Key
                 byte[] key = new byte[512];
                 stream.Read(key);
-                ClientKey = new byte[320];
+                ClientKey = new byte[32];
                 ClientKey = enc.Decrypt(key, RSAEncryptionPadding.Pkcs1);
                 //Console.WriteLine("Client key is {0}", Encoding.Default.GetString(ClientKey));
 
@@ -88,8 +88,9 @@ namespace SecurityDroneTest
                         //Will need to make input handle different for actual application
                         using(FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
                         {
-                            byte[] bytes = new byte[320];
-                            fs.Read(bytes, 0, 320);
+                            BinaryReader reader = new BinaryReader(fs);
+                            byte[] bytes = new byte[32];
+                            bytes = reader.ReadBytes(32);
 
                             byte [] encryptedInput = EncryptorDecryptor.Encrypt(Rng.getNext(), bytes, ClientKey);
 
