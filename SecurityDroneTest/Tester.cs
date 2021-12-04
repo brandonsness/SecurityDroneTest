@@ -12,12 +12,16 @@ namespace SecurityDroneTest
         {
             Drone = 1,
             Controller = 2,
-            Data = 3
+            Data = 3,
+            DroneRSA = 4,
+            ControllerRSA = 5,
+            DroneAES = 6,
+            ControllerAES = 7
         };
 
         public class Options
         {
-            [Option('m', "mode", Required = true, HelpText = "Sets mode either Drone, Controller, or Data" )]
+            [Option('m', "mode", Required = true, HelpText = "Sets mode either Drone, Controller, Data, DroneRSA, ControllerRSA, DroneAES, ControllerAES" )]
             public ModeEnum Mode { get; set; }
 
             [Option('i', "ip", Required = false, HelpText = "IP of Drone only need if in Controller mode")]
@@ -62,6 +66,18 @@ namespace SecurityDroneTest
             {
                 Console.WriteLine("Data entry mode\n");
                 DataGenerator.Generate(opts.FileName);
+            }
+            else if(opts.Mode == ModeEnum.DroneRSA)
+            {
+            }
+            else if(opts.Mode == ModeEnum.ControllerRSA)
+            {
+            }
+            else if(opts.Mode == ModeEnum.DroneAES)
+            {
+            }
+            else if(opts.Mode == ModeEnum.ControllerAES)
+            {
             }
             else
             {
