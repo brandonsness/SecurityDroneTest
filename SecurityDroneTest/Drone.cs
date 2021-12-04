@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SecurityDroneTest
@@ -10,7 +11,7 @@ namespace SecurityDroneTest
     {
         PRNG Rng { get; set; }
 
-        int ClientKey { get; set; } 
+        byte [] ClientKey { get; set; } 
 
         public Drone()
         {
@@ -40,21 +41,22 @@ namespace SecurityDroneTest
                 NetworkStream stream = control.GetStream();
 
                 //TODO: Perform async key exchange here
-
                 GenerateClientKey();
+                ShareClientKey(stream);
 
                 //Send clientKey and Seed to controller
-                stream.Write(BitConverter.GetBytes(ClientKey));
                 stream.Write(BitConverter.GetBytes(Rng.Seed.Ticks));
 
-                byte[] bytes = null;
-                //listen for commands better way to do this
-                while(true)
+                byte[] bytes = new byte [16];
+                stream.Read(bytes);
+                long fileSize = BitConverter.ToInt64(bytes);
+                Console.WriteLine("file size is {0}", fileSize);
+                while(fileSize > 0)
                 {
-                    bytes = new byte[1024];
+                    bytes = new byte[32];
                     stream.Read(bytes);
-                    int data = BitConverter.ToInt32(bytes);
-                    HandleCommand(data);
+                    fileSize -= 32;
+                    HandleCommand(bytes);
                 }
 
                 stream.Close();
@@ -67,18 +69,42 @@ namespace SecurityDroneTest
             }
         }
 
-        private bool HandleCommand(int input)
+        private bool HandleCommand(byte [] input)
         {
-            int command = EncryptorDecryptor.Decrypt(Rng.getNext(), input, ClientKey);
-            Console.WriteLine("DRONE: Decrypted Command is: " + command + "\n");
+            byte [] command = EncryptorDecryptor.Decrypt(Rng.getNext(), input, ClientKey);
+            double[] decrypt = GetDoubles(command);
+            Console.WriteLine("DRONE: Decrypted Command is: {0},{1},{2},{3}", decrypt[0], decrypt[1], decrypt[2], decrypt[3]);
             return true;
         }
 
         private void GenerateClientKey()
         {
-            //TODO: Generate client key
-            //For protoyping stage will set it to fixed number;
-            ClientKey = 434823234;
+            //Use new Cryptographic RNG for ClientKey 
+            byte[] bytes = new byte[32];
+            RandomNumberGenerator rng = RandomNumberGenerator.Create();
+            rng.GetBytes(bytes);
+            ClientKey = bytes;
         }
+
+        private void ShareClientKey(NetworkStream stream)
+        {
+            Console.WriteLine("Client Key is {0}\n", Encoding.Default.GetString(ClientKey));
+            RSA enc = new RSACryptoServiceProvider();
+            byte[] cPubKey = new byte[4096];
+            //recv client public key
+            stream.Read(cPubKey);
+            //encrypt the ClientKey with client's public key
+            int tmp;
+            enc.ImportRSAPublicKey(cPubKey, out tmp);
+            stream.Write(enc.Encrypt(ClientKey, RSAEncryptionPadding.Pkcs1));
+        }
+
+        private double[] GetDoubles(byte[] values)
+            {
+                var result = new double[values.Length / 8];
+                Buffer.BlockCopy(values, 0, result, 0, result.Length * 8);
+                return result;
+            }
+
     }
 }

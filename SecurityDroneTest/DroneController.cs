@@ -1,5 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace SecurityDroneTest
 {
@@ -7,16 +10,16 @@ namespace SecurityDroneTest
     {
         public PRNG Rng { get; set; }
 
-        private int ClientKey { get; set; }
+        private byte[] ClientKey { get; set; }
 
         private DateTime Seed { get; set; }
 
-        public DroneController(string servIP, int port)
+        public DroneController(string servIP, int port, string filename)
         {
-            HandleConnection(servIP, port);
+            HandleConnection(servIP, port, filename);
         }
 
-        private void HandleConnection(string servIP, int port)
+        private void HandleConnection(string servIP, int port, string filename)
         {
             try
             {
@@ -28,15 +31,16 @@ namespace SecurityDroneTest
 
                 //get data from server
                 GetSetupData(stream);
+                Console.WriteLine("Setup complete");
 
                 //Take user input
-                HandleInput(stream);
+                HandleInput(stream, filename);
 
                 //Release socket
                 stream.Close();
                 control.Close();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine("Ooops, problem with DroneController connection " + e.ToString() + "\n");
             }
@@ -44,59 +48,72 @@ namespace SecurityDroneTest
 
         private void GetSetupData(NetworkStream stream)
         {
-            byte[] bytes = new byte[1024];
             try
             {
-                //Get ClientKey
-                stream.Read(bytes);
-                ClientKey = BitConverter.ToInt32(bytes);
-                Console.WriteLine("Client key is {0}", ClientKey);
+                //Get Client Key
+                RSA enc = RSACryptoServiceProvider.Create(4096);
+                //send our public key
+                stream.Write(enc.ExportRSAPublicKey());
+                //get encrypted Client Key
+                byte[] key = new byte[512];
+                stream.Read(key);
+                ClientKey = new byte[32];
+                ClientKey = enc.Decrypt(key, RSAEncryptionPadding.Pkcs1);
+                //Console.WriteLine("Client key is {0}", Encoding.Default.GetString(ClientKey));
 
                 //Get Seed
+                byte[] bytes = new byte[1024];
                 stream.Read(bytes);
-                Seed = DateTime.FromBinary(BitConverter.ToInt64(bytes)); 
-                Console.WriteLine("Seed is {0}", Seed);
+                Seed = DateTime.FromBinary(BitConverter.ToInt64(bytes));
+                //Console.WriteLine("Seed is {0}", Seed);
 
                 //Init Rng
                 Rng = new PRNG(Seed);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine("Ooops, problem getting data from Drone" + e.ToString() + "\n");
             }
         }
 
-        private void HandleInput(NetworkStream stream)
+        private void HandleInput(NetworkStream stream, string filename)
         {
-            byte[] bytes = new byte[1024];
-            while(true)
+            try
             {
+                //Get user input encrypt and send
                 try
                 {
-                    //Get user input encrypt and send
-                    try
+                    FileInfo info = new FileInfo(filename);
+                    long fileSize = info.Length;
+                    Console.WriteLine("File size {0}", fileSize);
+                    stream.Write(BitConverter.GetBytes(fileSize));
+                    using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
                     {
-                        //Will need to make input handle different for actual application
-                        int input = Convert.ToInt32(Console.ReadLine());
-                        int encryptedInput = EncryptorDecryptor.Encrypt(Rng.getNext(), input, ClientKey);
+                        while (fileSize > 0)
+                        {
+                            BinaryReader reader = new BinaryReader(fs);
+                            byte[] bytes = new byte[32];
+                            bytes = reader.ReadBytes(32);
+                            fileSize -= 32;
 
-                        //Send encrypted data to Drone
-                        stream.Write(BitConverter.GetBytes(encryptedInput));
-                    }
-                    catch(FormatException e)
-                    {
-                        //Again will need to rework how we handle input
-                        Console.WriteLine("Invalid input: Please input a number\n");
+                            byte[] encryptedInput = EncryptorDecryptor.Encrypt(Rng.getNext(), bytes, ClientKey);
+
+                            //Send encrypted data to Drone
+                            stream.Write(encryptedInput);
+                        }
                     }
                 }
-
-                catch(Exception e)
+                catch (FormatException e)
                 {
-                    Console.WriteLine("Ooops, problem sending data to Drone " + e.ToString() + "\n");
+                    //Again will need to rework how we handle input
+                    Console.WriteLine("Invalid input: Please input a number\n");
                 }
             }
 
+            catch (Exception e)
+            {
+                Console.WriteLine("Ooops, problem sending data to Drone " + e.ToString() + "\n");
+            }
         }
-
     }
 }

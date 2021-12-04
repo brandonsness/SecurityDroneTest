@@ -11,12 +11,13 @@ namespace SecurityDroneTest
         public enum ModeEnum
         {
             Drone = 1,
-            Controller = 2
+            Controller = 2,
+            Data = 3
         };
 
         public class Options
         {
-            [Option('m', "mode", Required = true, HelpText = "Sets mode either Drone or Controller" )]
+            [Option('m', "mode", Required = true, HelpText = "Sets mode either Drone, Controller, or Data" )]
             public ModeEnum Mode { get; set; }
 
             [Option('i', "ip", Required = false, HelpText = "IP of Drone only need if in Controller mode")]
@@ -24,6 +25,9 @@ namespace SecurityDroneTest
 
             [Option('p', "port", Required = false, HelpText = "Port of the Drone only need if in Controller mode")]
             public int Port { get; set; }
+
+            [Option('f', "file", Required = false, HelpText = "filename for input file")]
+            public string FileName { get; set; }
         }
 
         public static void Main(string [] args)
@@ -52,19 +56,24 @@ namespace SecurityDroneTest
             else if(opts.Mode == ModeEnum.Controller)
             {
                 Console.WriteLine("Controller mode\n");
-                DroneController controller = new DroneController(opts.IP, opts.Port);
+                DroneController controller = new DroneController(opts.IP, opts.Port, opts.FileName);
+            }
+            else if(opts.Mode == ModeEnum.Data)
+            {
+                Console.WriteLine("Data entry mode\n");
+                DataGenerator.Generate(opts.FileName);
             }
             else
             {
                 Console.WriteLine("Mode not selected");
-                Console.WriteLine("USAGE:\n SecurityDroneTest --[m|mode] [Drone|Controller] --[i|ip] [ip address] --[p|port] [port]\n");
+                Console.WriteLine("USAGE:\n SecurityDroneTest --[m|mode] [Drone|Controller|Data] --[i|ip] [ip address] --[p|port] [port] --[f|file] [filename]\n");
             }
         }
 
         static void Error(IEnumerable<Error> err)
         {
             Console.WriteLine("Error in usage\n");
-            Console.WriteLine("USAGE:\n SecurityDroneTest --[m|mode] [Drone|Controller] --[i|ip] [ip address] --[p|port] [port]\n");
+            Console.WriteLine("USAGE:\n SecurityDroneTest --[m|mode] [Drone|Controller|Data] --[i|ip] [ip address] --[p|port] [port] --[f|file] [filename]\n");
         }
     }
 }
