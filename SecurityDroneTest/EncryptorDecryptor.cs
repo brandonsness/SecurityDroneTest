@@ -21,7 +21,6 @@ namespace SecurityDroneTest
         //XORs two byte arrays
         public static byte[] XOR(byte[] arr1, byte[] arr2)
         {
-            Console.WriteLine("arr1 length is {0}, arr2 lengt is {1}", arr1.Length, arr2.Length);
             if (arr1.Length != arr2.Length)
                 throw new ArgumentException("arrs are not the same length");
 

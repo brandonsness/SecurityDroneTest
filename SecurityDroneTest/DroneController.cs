@@ -10,7 +10,7 @@ namespace SecurityDroneTest
     {
         public PRNG Rng { get; set; }
 
-        private byte [] ClientKey { get; set; }
+        private byte[] ClientKey { get; set; }
 
         private DateTime Seed { get; set; }
 
@@ -40,7 +40,7 @@ namespace SecurityDroneTest
                 stream.Close();
                 control.Close();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine("Ooops, problem with DroneController connection " + e.ToString() + "\n");
             }
@@ -64,13 +64,13 @@ namespace SecurityDroneTest
                 //Get Seed
                 byte[] bytes = new byte[1024];
                 stream.Read(bytes);
-                Seed = DateTime.FromBinary(BitConverter.ToInt64(bytes)); 
+                Seed = DateTime.FromBinary(BitConverter.ToInt64(bytes));
                 //Console.WriteLine("Seed is {0}", Seed);
 
                 //Init Rng
                 Rng = new PRNG(Seed);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine("Ooops, problem getting data from Drone" + e.ToString() + "\n");
             }
@@ -78,41 +78,42 @@ namespace SecurityDroneTest
 
         private void HandleInput(NetworkStream stream, string filename)
         {
-            while(true)
+            try
             {
+                //Get user input encrypt and send
                 try
                 {
-                    //Get user input encrypt and send
-                    try
+                    FileInfo info = new FileInfo(filename);
+                    long fileSize = info.Length;
+                    Console.WriteLine("File size {0}", fileSize);
+                    stream.Write(BitConverter.GetBytes(fileSize));
+                    using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
                     {
-                        //Will need to make input handle different for actual application
-                        using(FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
+                        while (fileSize > 0)
                         {
                             BinaryReader reader = new BinaryReader(fs);
                             byte[] bytes = new byte[32];
                             bytes = reader.ReadBytes(32);
+                            fileSize -= 32;
 
-                            byte [] encryptedInput = EncryptorDecryptor.Encrypt(Rng.getNext(), bytes, ClientKey);
+                            byte[] encryptedInput = EncryptorDecryptor.Encrypt(Rng.getNext(), bytes, ClientKey);
 
                             //Send encrypted data to Drone
                             stream.Write(encryptedInput);
                         }
-
-                    }
-                    catch(FormatException e)
-                    {
-                        //Again will need to rework how we handle input
-                        Console.WriteLine("Invalid input: Please input a number\n");
                     }
                 }
-
-                catch(Exception e)
+                catch (FormatException e)
                 {
-                    Console.WriteLine("Ooops, problem sending data to Drone " + e.ToString() + "\n");
+                    //Again will need to rework how we handle input
+                    Console.WriteLine("Invalid input: Please input a number\n");
                 }
             }
 
+            catch (Exception e)
+            {
+                Console.WriteLine("Ooops, problem sending data to Drone " + e.ToString() + "\n");
+            }
         }
-
     }
 }

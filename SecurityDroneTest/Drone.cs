@@ -47,12 +47,15 @@ namespace SecurityDroneTest
                 //Send clientKey and Seed to controller
                 stream.Write(BitConverter.GetBytes(Rng.Seed.Ticks));
 
-                byte[] bytes = null;
-                //listen for commands better way to do this
-                while(true)
+                byte[] bytes = new byte [16];
+                stream.Read(bytes);
+                long fileSize = BitConverter.ToInt64(bytes);
+                Console.WriteLine("file size is {0}", fileSize);
+                while(fileSize > 0)
                 {
                     bytes = new byte[32];
                     stream.Read(bytes);
+                    fileSize -= 32;
                     HandleCommand(bytes);
                 }
 
@@ -96,10 +99,10 @@ namespace SecurityDroneTest
             stream.Write(enc.Encrypt(ClientKey, RSAEncryptionPadding.Pkcs1));
         }
 
-         private double[] GetDoubles(byte[] values)
+        private double[] GetDoubles(byte[] values)
             {
-                var result = new double[4];
-                Buffer.BlockCopy(values, 0, result, 0, result.Length);
+                var result = new double[values.Length / 8];
+                Buffer.BlockCopy(values, 0, result, 0, result.Length * 8);
                 return result;
             }
 
