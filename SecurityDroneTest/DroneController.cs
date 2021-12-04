@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace SecurityDroneTest
 {
@@ -8,7 +10,7 @@ namespace SecurityDroneTest
     {
         public PRNG Rng { get; set; }
 
-        private int ClientKey { get; set; }
+        private byte [] ClientKey { get; set; }
 
         private DateTime Seed { get; set; }
 
@@ -29,6 +31,7 @@ namespace SecurityDroneTest
 
                 //get data from server
                 GetSetupData(stream);
+                Console.WriteLine("Setup complete");
 
                 //Take user input
                 HandleInput(stream, filename);
@@ -45,18 +48,24 @@ namespace SecurityDroneTest
 
         private void GetSetupData(NetworkStream stream)
         {
-            byte[] bytes = new byte[1024];
             try
             {
-                //Get ClientKey
-                stream.Read(bytes);
-                ClientKey = BitConverter.ToInt32(bytes);
-                Console.WriteLine("Client key is {0}", ClientKey);
+                //Get Client Key
+                RSA enc = RSACryptoServiceProvider.Create(4096);
+                //send our public key
+                stream.Write(enc.ExportRSAPublicKey());
+                //get encrypted Client Key
+                byte[] key = new byte[512];
+                stream.Read(key);
+                ClientKey = new byte[320];
+                ClientKey = enc.Decrypt(key, RSAEncryptionPadding.Pkcs1);
+                //Console.WriteLine("Client key is {0}", Encoding.Default.GetString(ClientKey));
 
                 //Get Seed
+                byte[] bytes = new byte[1024];
                 stream.Read(bytes);
                 Seed = DateTime.FromBinary(BitConverter.ToInt64(bytes)); 
-                Console.WriteLine("Seed is {0}", Seed);
+                //Console.WriteLine("Seed is {0}", Seed);
 
                 //Init Rng
                 Rng = new PRNG(Seed);
@@ -79,13 +88,13 @@ namespace SecurityDroneTest
                         //Will need to make input handle different for actual application
                         using(FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
                         {
-                            byte[] bytes = new byte[1024];
-                            fs.Read(bytes, 0, 1024);
+                            byte[] bytes = new byte[320];
+                            fs.Read(bytes, 0, 320);
 
-                            int encryptedInput = EncryptorDecryptor.Encrypt(Rng.getNext(), input, ClientKey);
+                            byte [] encryptedInput = EncryptorDecryptor.Encrypt(Rng.getNext(), bytes, ClientKey);
 
                             //Send encrypted data to Drone
-                            stream.Write(BitConverter.GetBytes(encryptedInput));
+                            stream.Write(encryptedInput);
                         }
 
                     }
