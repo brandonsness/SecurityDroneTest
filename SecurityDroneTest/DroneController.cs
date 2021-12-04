@@ -63,9 +63,11 @@ namespace SecurityDroneTest
                 //Console.WriteLine("Client key is {0}", Encoding.Default.GetString(ClientKey));
 
                 //Get Seed
-                byte[] bytes = new byte[1024];
+                byte[] bytes = new byte[512];
                 stream.Read(bytes);
-                Seed = DateTime.FromBinary(BitConverter.ToInt64(bytes));
+                byte[] seed = new byte[32];
+                seed = enc.Decrypt(bytes, RSAEncryptionPadding.Pkcs1);
+                Seed = DateTime.FromBinary(BitConverter.ToInt64(seed));
                 //Console.WriteLine("Seed is {0}", Seed);
 
                 //Init Rng

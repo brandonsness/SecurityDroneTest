@@ -42,16 +42,14 @@ namespace SecurityDroneTest
                 NetworkStream stream = control.GetStream();
 
                 GenerateClientKey();
-                ShareClientKey(stream);
-
                 //Send clientKey and Seed to controller
-                stream.Write(BitConverter.GetBytes(Rng.Seed.Ticks));
+                ShareClientKeyAndSeed(stream);
+
 
                 byte[] bytes = new byte [16];
                 stream.Read(bytes);
                 long fileSize = BitConverter.ToInt64(bytes);
                 Console.WriteLine("file size is {0}", fileSize);
-
 
                 //start timer
                 var stopwatch = new Stopwatch();
@@ -94,7 +92,7 @@ namespace SecurityDroneTest
             ClientKey = bytes;
         }
 
-        private void ShareClientKey(NetworkStream stream)
+        private void ShareClientKeyAndSeed(NetworkStream stream)
         {
             Console.WriteLine("Client Key is {0}\n", Encoding.Default.GetString(ClientKey));
             RSA enc = new RSACryptoServiceProvider();
@@ -105,6 +103,9 @@ namespace SecurityDroneTest
             int tmp;
             enc.ImportRSAPublicKey(cPubKey, out tmp);
             stream.Write(enc.Encrypt(ClientKey, RSAEncryptionPadding.Pkcs1));
+
+            //encrypt seed with client's public key
+            stream.Write(enc.Encrypt(BitConverter.GetBytes(Rng.Seed.Ticks), RSAEncryptionPadding.Pkcs1));
         }
 
         private double[] GetDoubles(byte[] values)
