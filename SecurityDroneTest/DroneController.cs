@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Sockets;
 
 namespace SecurityDroneTest
@@ -11,12 +12,12 @@ namespace SecurityDroneTest
 
         private DateTime Seed { get; set; }
 
-        public DroneController(string servIP, int port)
+        public DroneController(string servIP, int port, string filename)
         {
-            HandleConnection(servIP, port);
+            HandleConnection(servIP, port, filename);
         }
 
-        private void HandleConnection(string servIP, int port)
+        private void HandleConnection(string servIP, int port, string filename)
         {
             try
             {
@@ -30,7 +31,7 @@ namespace SecurityDroneTest
                 GetSetupData(stream);
 
                 //Take user input
-                HandleInput(stream);
+                HandleInput(stream, filename);
 
                 //Release socket
                 stream.Close();
@@ -66,9 +67,8 @@ namespace SecurityDroneTest
             }
         }
 
-        private void HandleInput(NetworkStream stream)
+        private void HandleInput(NetworkStream stream, string filename)
         {
-            byte[] bytes = new byte[1024];
             while(true)
             {
                 try
@@ -77,11 +77,17 @@ namespace SecurityDroneTest
                     try
                     {
                         //Will need to make input handle different for actual application
-                        int input = Convert.ToInt32(Console.ReadLine());
-                        int encryptedInput = EncryptorDecryptor.Encrypt(Rng.getNext(), input, ClientKey);
+                        using(FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
+                        {
+                            byte[] bytes = new byte[1024];
+                            fs.Read(bytes, 0, 1024);
 
-                        //Send encrypted data to Drone
-                        stream.Write(BitConverter.GetBytes(encryptedInput));
+                            int encryptedInput = EncryptorDecryptor.Encrypt(Rng.getNext(), input, ClientKey);
+
+                            //Send encrypted data to Drone
+                            stream.Write(BitConverter.GetBytes(encryptedInput));
+                        }
+
                     }
                     catch(FormatException e)
                     {
