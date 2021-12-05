@@ -69,9 +69,13 @@ namespace SecurityDroneTest
             }
             else if(opts.Mode == ModeEnum.DroneRSA)
             {
+                Console.WriteLine("Drone RSA mode\n");
+                DroneRSA drone = new DroneRSA();
             }
             else if(opts.Mode == ModeEnum.ControllerRSA)
             {
+                Console.WriteLine("Controller RSA mode\n");
+                ControllerRSA controller = new ControllerRSA(opts.IP, opts.Port, opts.FileName);
             }
             else if(opts.Mode == ModeEnum.DroneAES)
             {
