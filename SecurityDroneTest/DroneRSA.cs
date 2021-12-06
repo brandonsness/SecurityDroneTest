@@ -4,22 +4,26 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace SecurityDroneTest
 {
+    /// <summary>
+    /// RSA implementation of the Drone
+    /// </summary>
     public class DroneRSA
     {
-        PRNG Rng { get; set; }
 
-        byte[] ClientKey { get; set; }
-
+        /// <summary>
+        /// Constructor for DroneRSA
+        /// </summary>
         public DroneRSA()
         {
-            Rng = new PRNG();
             SetupConnection();
         }
 
+        /// <summary>
+        /// Creates TCP connection and communicates with ControllerRSA
+        /// </summary>
         private void SetupConnection()
         {
             TcpListener drone = null;
@@ -30,17 +34,18 @@ namespace SecurityDroneTest
 
             try
             {
+                //Start connection
                 drone = new TcpListener(ipAddress, 0);
                 drone.Start();
 
                 Console.WriteLine("DRONE: Connected on {0}:{1}\n", ((IPEndPoint)drone.LocalEndpoint).Address.ToString(), ((IPEndPoint)drone.LocalEndpoint).Port.ToString());
 
+                //Get connection from Drone
                 TcpClient control = drone.AcceptTcpClient();
                 Console.WriteLine("Connected to controller\n");
 
                 //Stream for communicating
                 NetworkStream stream = control.GetStream();
-
 
                 RSA enc = RSACryptoServiceProvider.Create(4096);
                 //send our public key
@@ -56,6 +61,7 @@ namespace SecurityDroneTest
                 stopwatch.Start();
                 while (fileSize > 0)
                 {
+                    //Get encrypted data
                     bytes = new byte[512];
                     stream.Read(bytes);
                     fileSize -= 512;
@@ -71,10 +77,16 @@ namespace SecurityDroneTest
             }
             catch (Exception e)
             {
-                Console.WriteLine("Oops Drone encountered error" + e.ToString() + "\n");
+                Console.WriteLine("Oops DroneRSA encountered error" + e.ToString() + "\n");
             }
         }
 
+        /// <summary>
+        /// Handle Decrypting and executing command
+        /// </summary>
+        /// <param name="input">Encrypted command data</param>
+        /// <param name="enc">RSA class used to decrypt data</param>
+        /// <returns>If command was successfully handled</returns>
         private bool HandleCommand(byte[] input, RSA enc)
         {
             byte[] command = enc.Decrypt(input, RSAEncryptionPadding.Pkcs1);
@@ -83,6 +95,11 @@ namespace SecurityDroneTest
             return true;
         }
 
+        /// <summary>
+        /// Helper function to convert from byte[] to double[]
+        /// </summary>
+        /// <param name="values">byte[] to be converted</param>
+        /// <returns>Converted double[]</returns>
         private double[] GetDoubles(byte[] values)
         {
             var result = new double[values.Length / 8];

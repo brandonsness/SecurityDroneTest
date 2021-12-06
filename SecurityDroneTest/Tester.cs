@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using CommandLine;
-using CommandLine.Text;
 
 namespace SecurityDroneTest
 {
+    /// <summary>
+    /// Main class used to run the different modes
+    /// </summary>
     public class Tester
     {
+        /// <summary>
+        /// Enum for different modes
+        /// </summary>
         [Flags]
         public enum ModeEnum
         {
@@ -19,6 +24,9 @@ namespace SecurityDroneTest
             ControllerAES = 7
         };
 
+        /// <summary>
+        /// Helper Class used to handle Command line input
+        /// </summary>
         public class Options
         {
             [Option('m', "mode", Required = true, HelpText = "Sets mode either Drone, Controller, Data, DroneRSA, ControllerRSA, DroneAES, ControllerAES" )]
@@ -34,22 +42,22 @@ namespace SecurityDroneTest
             public string FileName { get; set; }
         }
 
+        /// <summary>
+        /// Start of program handles command line argumnts
+        /// </summary>
+        /// <param name="args">Command line arguments as specified from the Options Class</param>
         public static void Main(string [] args)
         {
-            /*
-            // Demonstrating public/private key generation. Can delete later.
-            DroneRSA keys = new DroneRSA();
-            Console.WriteLine(BitConverter.ToString(keys.rsaKeyInfo.Exponent));
-            Console.WriteLine(BitConverter.ToString(keys.rsaKeyInfo.D));
-
-            Drone drone = new Drone();
-            //DroneController control = new DroneController();
-            */
+            //Parse Command line arguments and start the different modes
             var parser = new Parser();
             var result = parser.ParseArguments<Options>(args).WithParsed(Run)
                 .WithNotParsed(Error);
         }
 
+        /// <summary>
+        /// Runs the specified modes from the Options
+        /// </summary>
+        /// <param name="opts">Options specified from command line</param>
         static void Run(Options opts)
         {
             if(opts.Mode == ModeEnum.Drone)
@@ -94,6 +102,10 @@ namespace SecurityDroneTest
             }
         }
 
+        /// <summary>
+        /// Supposed to handle any errors in command line input
+        /// </summary>
+        /// <param name="err">List of errors</param>
         static void Error(IEnumerable<Error> err)
         {
             Console.WriteLine("Error in usage\n");
