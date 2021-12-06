@@ -3,31 +3,53 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace SecurityDroneTest
 {
+    /// <summary>
+    /// Our implementation of the Drone Controller
+    /// </summary>
     public class DroneController
     {
+        /// <summary>
+        /// Psuedo Random Number Generator used in our encryption scheme
+        /// </summary>
         public PRNG Rng { get; set; }
 
+        /// <summary>
+        /// Cryptographically generated Random number used in our encryption scheme
+        /// </summary>
         private byte[] ClientKey { get; set; }
 
+        /// <summary>
+        /// Seed used to create PRNG
+        /// </summary>
         private DateTime Seed { get; set; }
 
+        /// <summary>
+        /// Constructor for our Drone Controller
+        /// </summary>
+        /// <param name="servIP">IP of the Drone connection</param>
+        /// <param name="port">Port of the TCP Drone connection</param>
+        /// <param name="filename">Filename of the input file for the drone commands</param>
         public DroneController(string servIP, int port, string filename)
         {
             HandleConnection(servIP, port, filename);
         }
 
+        /// <summary>
+        /// Starts connection with Drone and sends data
+        /// </summary>
+        /// <param name="servIP">IP of the Drone connection</param>
+        /// <param name="port">Port of the TCP Drone connection</param>
+        /// <param name="filename">Filename of the input file for the drone commands</param>
         private void HandleConnection(string servIP, int port, string filename)
         {
             try
             {
+                //Connect to Drone
                 TcpClient control = new TcpClient(servIP, port);
-
                 NetworkStream stream = control.GetStream();
-
                 Console.WriteLine("Socket connected");
 
                 //get data from server
@@ -47,11 +69,17 @@ namespace SecurityDroneTest
             }
         }
 
+        /// <summary>
+        /// Gets the CLientKey and the Seed from the Drone
+        /// </summary>
+        /// <param name="stream">TCP Connection to Drone</param>
         private void GetSetupData(NetworkStream stream)
         {
             try
             {
                 //Get Client Key
+                //Create RSA public and private keys for secure data transfer
+                //of just the client key and the seed
                 RSA enc = RSACryptoServiceProvider.Create(4096);
                 //send our public key
                 stream.Write(enc.ExportRSAPublicKey());
@@ -79,6 +107,11 @@ namespace SecurityDroneTest
             }
         }
 
+        /// <summary>
+        /// Gets data from file, encrypts it, and sends it to the Drone
+        /// </summary>
+        /// <param name="stream">TCP Connection to the Drone</param>
+        /// <param name="filename">Filename of the input file</param>
         private void HandleInput(NetworkStream stream, string filename)
         {
             try
@@ -98,6 +131,7 @@ namespace SecurityDroneTest
                         //read and send data
                         while (fileSize > 0)
                         {
+                            //Get input
                             BinaryReader reader = new BinaryReader(fs);
                             byte[] bytes = new byte[32];
                             bytes = reader.ReadBytes(32);
@@ -115,8 +149,7 @@ namespace SecurityDroneTest
                 }
                 catch (FormatException e)
                 {
-                    //Again will need to rework how we handle input
-                    Console.WriteLine("Invalid input: Please input a number\n");
+                    Console.WriteLine("Invalid input Error:\n");
                 }
             }
 

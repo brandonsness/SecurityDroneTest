@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
@@ -8,21 +7,40 @@ using System.Text;
 
 namespace SecurityDroneTest
 {
+    /// <summary>
+    /// ControllerAES is the class for the AES version of the drone controller
+    /// It handles gathering, encrypting, and sending data to the AES version of the drone
+    /// </summary>
     class ControllerAES
     {
+        /// <summary>
+        /// AES class used for encrypting data
+        /// </summary>
         AesManaged Enc { get; set; }
 
+        /// <summary>
+        /// Constructor for the ControllerAES class
+        /// </summary>
+        /// <param name="servIP">IP of the Simulated Drone</param>
+        /// <param name="port">Port number the Drone connection is bound to</param>
+        /// <param name="filename">Filename of the input file used to simulate drone commands</param>
         public ControllerAES(string servIP, int port, string filename)
         {
             HandleConnection(servIP, port, filename);
         }
 
+        /// <summary>
+        /// Function that handles the connection for the controller
+        /// </summary>
+        /// <param name="servIP">IP of the Simulated Drone</param>
+        /// <param name="port">Port number the Drone connection is bound to</param>
+        /// <param name="filename">Filename of the input file used to simulate drone commands</param>
         private void HandleConnection(string servIP, int port, string filename)
         {
             try
             {
+                //Set up TCP socket connection to drone
                 TcpClient control = new TcpClient(servIP, port);
-
                 NetworkStream stream = control.GetStream();
 
                 Console.WriteLine("Socket connected");
@@ -31,7 +49,7 @@ namespace SecurityDroneTest
                 GetSetupData(stream);
                 Console.WriteLine("Setup complete");
 
-                //Take user input
+                //Grab and send input data
                 HandleInput(stream, filename);
 
                 //Release socket
@@ -40,10 +58,14 @@ namespace SecurityDroneTest
             }
             catch (Exception e)
             {
-                Console.WriteLine("Ooops, problem with DroneController connection " + e.ToString() + "\n");
+                Console.WriteLine("Ooops, problem with ControllerAES connection " + e.ToString() + "\n");
             }
         }
 
+        /// <summary>
+        /// Creates AES key and sends data to connected DroneAES
+        /// </summary>
+        /// <param name="stream">Connection to the DroneAES</param>
         private void GetSetupData(NetworkStream stream)
         {
             try
@@ -60,10 +82,15 @@ namespace SecurityDroneTest
             }
             catch (Exception e)
             {
-                Console.WriteLine("Ooops, problem getting data from Drone" + e.ToString() + "\n");
+                Console.WriteLine("Ooops, problem getting data from DroneAES" + e.ToString() + "\n");
             }
         }
 
+        /// <summary>
+        /// Grabs the data from the input file, encrypts it, and sends it to the connected DroneAES
+        /// </summary>
+        /// <param name="stream">Connection to the DroneAES</param>
+        /// <param name="filename">FileName that holds input data</param>
         private void HandleInput(NetworkStream stream, string filename)
         {
             try
@@ -84,6 +111,7 @@ namespace SecurityDroneTest
                         //read and send data
                         while (fileSize > 0)
                         {
+                            //grab data
                             BinaryReader reader = new BinaryReader(fs);
                             byte[] bytes = new byte[32];
                             bytes = reader.ReadBytes(32);
@@ -110,14 +138,13 @@ namespace SecurityDroneTest
                 }
                 catch (FormatException e)
                 {
-                    //Again will need to rework how we handle input
-                    Console.WriteLine("Invalid input: Please input a number\n");
+                    Console.WriteLine("Invalid input Error:\n");
                 }
             }
 
             catch (Exception e)
             {
-                Console.WriteLine("Ooops, problem sending data to Drone " + e.ToString() + "\n");
+                Console.WriteLine("Ooops, problem sending data to DroneAES " + e.ToString() + "\n");
             }
         }
     }

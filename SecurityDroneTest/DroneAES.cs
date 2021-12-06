@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,14 +9,23 @@ using System.Text;
 
 namespace SecurityDroneTest
 {
+    /// <summary>
+    /// AES implementation of the Drone
+    /// </summary>
     class DroneAES
     {
 
+        /// <summary>
+        /// Constructor for the AES version of the drone
+        /// </summary>
         public DroneAES()
         {
             SetupConnection();
         }
 
+        /// <summary>
+        /// Sets up the TCP Connection, Creates AES key and communicates with Controller
+        /// </summary>
         private void SetupConnection()
         {
             TcpListener drone = null;
@@ -28,11 +36,13 @@ namespace SecurityDroneTest
 
             try
             {
+                //start connection
                 drone = new TcpListener(ipAddress, 0);
                 drone.Start();
 
                 Console.WriteLine("DRONE: Connected on {0}:{1}\n", ((IPEndPoint)drone.LocalEndpoint).Address.ToString(), ((IPEndPoint)drone.LocalEndpoint).Port.ToString());
 
+                //Gets connection to ControllerAES
                 TcpClient control = drone.AcceptTcpClient();
                 Console.WriteLine("Connected to controller\n");
 
@@ -42,7 +52,7 @@ namespace SecurityDroneTest
                 //init AES
                 byte[] key = new byte[32];
                 byte[] iv = new byte[16];
-                //Note: this is not secure. We're sending a symmetric key over a socket
+                // Note: this is not secure. We're sending a symmetric key over a socket
                 // anyone listening would get our key. For this simulation we're assuming that
                 // the drone and controller would have some other way of sharing the key.
                 // Since we just want data on how long the encrytpion and decryption takes this is acceptable here.
@@ -54,6 +64,7 @@ namespace SecurityDroneTest
                 enc.Mode = CipherMode.CBC;
                 var decryptor = enc.CreateDecryptor(key, iv);
 
+                //Filesize important to know so we can shutdown Drone
                 byte[] bytes = new byte [16];
                 stream.Read(bytes);
                 long fileSize = BitConverter.ToInt64(bytes);
@@ -87,10 +98,15 @@ namespace SecurityDroneTest
             }
             catch(Exception e)
             {
-                Console.WriteLine("Oops Drone encountered error" + e.ToString() + "\n");
+                Console.WriteLine("Oops DroneAES encountered error" + e.ToString() + "\n");
             }
         }
 
+        /// <summary>
+        /// Handles the Command
+        /// </summary>
+        /// <param name="input">Decrypted byte[] of the command</param>
+        /// <returns>If Command was correctly handled</returns>
         private bool HandleCommand(byte [] input)
         {
             double[] decrypt = GetDoubles(input);
@@ -98,6 +114,11 @@ namespace SecurityDroneTest
             return true;
         }
 
+        /// <summary>
+        /// Helper function to convert from byte[] to double[]
+        /// </summary>
+        /// <param name="values">byte[] to be converted</param>
+        /// <returns>Converted double[]</returns>
         private double[] GetDoubles(byte[] values)
             {
                 var result = new double[values.Length / 8];

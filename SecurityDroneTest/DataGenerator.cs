@@ -3,14 +3,25 @@ using System.IO;
 
 namespace SecurityDroneTest
 {
+    /// <summary>
+    /// Static class used to manually generate test data
+    /// </summary>
     public static class DataGenerator
     {
+        /// <summary>
+        /// Generator method takes in user input and outputs to specified file
+        /// </summary>
+        /// <param name="fileName">File where output is sent</param>
         public static void Generate(string fileName)
         {
+            //We map the input as 4 doubles representing throttle, yaw, pitch and roll between -100 and 100.
             double throttle, yaw, pitch, roll;
+
+            //Open file
             FileStream stream = new FileStream(fileName, FileMode.Open, FileAccess.ReadWrite);
             BinaryWriter writer = new BinaryWriter(stream);
             Console.WriteLine("Enter data to generate data file each between -100 and 100");
+            //Not the best way of doing this, but it's effective for our limited use case
             while (true)
             {
                 while (true)
@@ -49,7 +60,7 @@ namespace SecurityDroneTest
                 byte[] bytes = GetBytes(arr);
 
                 writer.Write(bytes);
-                
+
                 Console.WriteLine("Press Enter to continue or type exit to exit");
                 string exit = Console.ReadLine();
                 if (exit.Equals("exit"))
@@ -59,6 +70,11 @@ namespace SecurityDroneTest
                 }
             }
 
+
+            /// <summary>
+            /// Helper function to convert double[] to byte[]
+            /// </summary>
+            /// <param name="values">double[] to be converted to byte[]</param>
             static byte[] GetBytes(double[] values)
             {
                 var result = new byte[values.Length * sizeof(double)];
